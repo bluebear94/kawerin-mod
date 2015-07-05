@@ -57,11 +57,14 @@ minetest.register_abm({
 	interval = 1.0,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		n = vector.new(pos.x, pos.y, pos.z - 1)
-		s = vector.new(pos.x, pos.y, pos.z + 1)
-		w = vector.new(pos.x - 1, pos.y, pos.z)
-		e = vector.new(pos.x + 1, pos.y, pos.z)
-		isMese = function(node) return node.name == "default:mese" end
+		local n = vector.new(pos.x, pos.y, pos.z - 1)
+		local s = vector.new(pos.x, pos.y, pos.z + 1)
+		local w = vector.new(pos.x - 1, pos.y, pos.z)
+		local e = vector.new(pos.x + 1, pos.y, pos.z)
+		local isMese = function(node)
+			return node.name == "default:mese" or
+					node.name == "default:diamondblock"
+		end
 		if not (isMese(minetest.get_node(n)) and isMese(minetest.get_node(s)) and
 				isMese(minetest.get_node(e)) and isMese(minetest.get_node(w))) then
 			return
@@ -93,3 +96,46 @@ minetest.register_craft({
 		{"default:steel_ingot", "default:mese", "default:steel_ingot"}
 	}
 })
+
+minetest.register_craft({
+	output = "kawerin:mini_hakkero",
+	recipe = {
+		{"default:steel_ingot", "default:diamondblock", "default:steel_ingot"},
+		{"default:diamondblock", "group:wood", "default:diamondblock"},
+		{"default:steel_ingot", "default:diamondblock", "default:steel_ingot"}
+	}
+})
+
+minetest.register_node(
+	"kawerin:conduit",
+	{
+		description = "コンデュイット",
+		tiles = {"conduit.png", "conduit.png", "conduit.png"},
+		groups = {cracky = 3, oddly_breakable_by_hand = 2, conduit = 1},
+		drawtype = "nodebox",
+		paramtype = "light",
+		node_box = {
+			type = "fixed",
+			fixed = {
+				{-0.5, -0.125, -0.125, 0.5, 0.125, 0.125},
+				{-0.125, -0.125, -0.5, 0.125, 0.125, 0.5},
+				{-0.125, -0.5, -0.125, 0.125, 0.5, 0.125}
+			}
+		}
+	}
+)
+
+minetest.register_craft({
+	output = "kawerin:conduit 48",
+	recipe = {
+		{"", "default:copper_ingot", ""},
+		{"default:copper_ingot", "default:copper_ingot", "default:copper_ingot"},
+		{"", "default:copper_ingot", ""}
+	}
+})
+
+minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
+	if newnode.name == "kawerin:conduit" then
+		newnode.param2 = 0
+	end
+end)
