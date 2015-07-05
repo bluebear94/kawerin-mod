@@ -110,6 +110,32 @@ power_reduction = {
 	["kawerin:conduit"] = 8,
 }
 
+function isConduit(node)
+	return minetest.get_item_group(node.name, "conduit") ~= 0
+end
+
+function isThereConduit(pos)
+	return isConduit(minetest.get_node(pos))
+end
+
+function getPowerLevel(pos, pr)
+	local node = minetest.get_node_or_nil(pos)
+	if not node then return 0 end
+	if node.name == "kawerin:power_block" then
+		return 255 + pr -- Compensate for power loss through wires
+	end
+	if isConduit(node) then
+		return node.param2
+	end
+	return 0
+end
+
+CONDUIT_MODEL = {
+	{-0.5, -0.125, -0.125, 0.5, 0.125, 0.125},
+	{-0.125, -0.125, -0.5, 0.125, 0.125, 0.5},
+	{-0.125, -0.5, -0.125, 0.125, 0.5, 0.125}
+}
+
 minetest.register_node(
 	"kawerin:conduit",
 	{
@@ -120,18 +146,16 @@ minetest.register_node(
 		paramtype = "light",
 		node_box = {
 			type = "fixed",
-			fixed = {
-				{-0.5, -0.125, -0.125, 0.5, 0.125, 0.125},
-				{-0.125, -0.125, -0.5, 0.125, 0.125, 0.5},
-				{-0.125, -0.5, -0.125, 0.125, 0.5, 0.125}
-			}
+			fixed = CONDUIT_MODEL
 		},
 		on_rightclick = function(pos, node, player, itemstack, pointed_thing)
 			minetest.chat_send_player(player:get_player_name(), tostring(node.param2))
 		end,
 		on_construct = function(pos)
 			minetest.get_node(pos).param2 = 0
-		end
+			updateConduitMain(pos)
+		end,
+		after_destruct = updateSurroundingConduits
 	}
 )
 
@@ -144,46 +168,14 @@ minetest.register_craft({
 	}
 })
 
--- TODO replace with block update version?
-minetest.register_abm({
-	nodenames = {"group:conduit"},
-	neighbors = {"group:conduit"},
-	interval = 1.0,
-	chance = 1,
-	action = function(pos, node, active_object_count, active_object_count_wider)
-		local pr = power_reduction[node.name]
-		local getPowerLevel = function(pos)
-			local node = minetest.get_node_or_nil(pos)
-			if not node then return 0 end
-			if node.name == "kawerin:power_block" then
-				return 255 + pr -- Compensate for power loss through wires
-			end
-			if minetest.get_item_group(node.name, "conduit") ~= 0 then
-				return node.param2
-			end
-			return 0
-		end
-		local n = vector.new(pos.x, pos.y, pos.z - 1)
-		local s = vector.new(pos.x, pos.y, pos.z + 1)
-		local w = vector.new(pos.x - 1, pos.y, pos.z)
-		local e = vector.new(pos.x + 1, pos.y, pos.z)
-		local u = vector.new(pos.x, pos.y + 1, pos.z)
-		local d = vector.new(pos.x, pos.y - 1, pos.z)
-		node.param2 = math.max(0,
-				getPowerLevel(n) - pr, getPowerLevel(s) - pr,
-				getPowerLevel(e) - pr, getPowerLevel(w) - pr,
-				getPowerLevel(u) - pr, getPowerLevel(d) - pr)
-		minetest.add_node(pos, node)
-	end
-})
-
 minetest.register_node(
 	"kawerin:power_block",
 	{
 		description = "パワーブロック",
 		tiles = {"power_block.png"},
 		groups = {cracky = 3},
-		light_source = 7
+		light_source = 7,
+		after_destruct = updateSurroundingConduits
 	}
 )
 
@@ -195,3 +187,71 @@ minetest.register_craft({
 		{"group:conduit", "group:conduit", "group:conduit"}
 	}
 })
+
+conductors = {
+	["default:steelblock"] = true,
+	["default:goldblock"] = true,
+	["default:copperblock"] = true,
+	["default:bronzeblock"] = true
+}
+
+function updateSurroundingConduits(pos)
+	local n = vector.new(pos.x, pos.y, pos.z - 1)
+	local s = vector.new(pos.x, pos.y, pos.z + 1)
+	local w = vector.new(pos.x - 1, pos.y, pos.z)
+	local e = vector.new(pos.x + 1, pos.y, pos.z)
+	local u = vector.new(pos.x, pos.y + 1, pos.z)
+	local d = vector.new(pos.x, pos.y - 1, pos.z)
+	updateConduitMain(n)
+	updateConduitMain(s)
+	updateConduitMain(w)
+	updateConduitMain(e)
+	updateConduitMain(u)
+	updateConduitMain(d)
+end
+
+function updateConduitMain(pos)
+	local coUpdate = coroutine.create(updateConduit)
+	coroutine.resume(coUpdate, pos, nil)
+	while coroutine.resume(coUpdate) do end
+end
+
+function updateConduitP(nx, cr, previous)
+	if (isThereConduit(nx)) then updateConduitD(pos, previous) end
+end
+
+function updateConduitD(nx, cr, previous)
+	if (nx ~= previous) then updateConduit(nx, cr) end
+end
+
+function updateConduit(pos, previous)
+	print(pos.x .. " " .. pos.y .. " " .. pos.z)
+	coroutine.yield()
+	local node = minetest.get_node(pos)
+	local name = node.name
+	local n = vector.new(pos.x, pos.y, pos.z - 1)
+	local s = vector.new(pos.x, pos.y, pos.z + 1)
+	local w = vector.new(pos.x - 1, pos.y, pos.z)
+	local e = vector.new(pos.x + 1, pos.y, pos.z)
+	local u = vector.new(pos.x, pos.y + 1, pos.z)
+	local d = vector.new(pos.x, pos.y - 1, pos.z)
+	local pr = power_reduction[node.name]
+	if not pr then pr = 8 end
+	if isConduit(node) then
+		local oldPower = node.param2
+		local newPower = math.max(0,
+				getPowerLevel(n, pr) - pr, getPowerLevel(s, pr) - pr,
+				getPowerLevel(e, pr) - pr, getPowerLevel(w, pr) - pr,
+				getPowerLevel(u, pr) - pr, getPowerLevel(d, pr) - pr)
+		if newPower ~= oldPower then
+			node.param2 = newPower
+			minetest.add_node(pos, node)
+			updateConduitD(n, pos, previous)
+			updateConduitD(s, pos, previous)
+			updateConduitD(w, pos, previous)
+			updateConduitD(e, pos, previous)
+			updateConduitD(u, pos, previous)
+			updateConduitD(d, pos, previous)
+		end
+	else return end
+end
