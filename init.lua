@@ -106,10 +106,6 @@ minetest.register_craft({
 	}
 })
 
-power_reduction = {
-	["kawerin:conduit"] = 8,
-}
-
 function isConduit(node)
 	return minetest.get_item_group(node.name, "conduit") ~= 0
 end
@@ -136,28 +132,32 @@ CONDUIT_MODEL = {
 	{-0.125, -0.5, -0.125, 0.125, 0.5, 0.125}
 }
 
-minetest.register_node(
-	"kawerin:conduit",
-	{
-		description = "コンデュイット",
-		tiles = {"conduit.png", "conduit.png", "conduit.png"},
-		groups = {cracky = 3, oddly_breakable_by_hand = 2, conduit = 1},
-		drawtype = "nodebox",
-		paramtype = "light",
-		node_box = {
-			type = "fixed",
-			fixed = CONDUIT_MODEL
-		},
-		on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-			minetest.chat_send_player(player:get_player_name(), tostring(node.param2))
-		end,
-		on_construct = function(pos)
-			minetest.get_node(pos).param2 = 0
-			updateConduitMain(pos)
-		end,
-		after_destruct = updateSurroundingConduits
-	}
-)
+function registerConduit(name, description, tile, pr)
+	minetest.register_node(
+		name,
+		{
+			description = description,
+			tiles = {tile, tile, tile},
+			groups = {cracky = 3, oddly_breakable_by_hand = 2, conduit = pr},
+			drawtype = "nodebox",
+			paramtype = "light",
+			node_box = {
+				type = "fixed",
+				fixed = CONDUIT_MODEL
+			},
+			on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+				minetest.chat_send_player(player:get_player_name(), tostring(node.param2))
+			end,
+			on_construct = function(pos)
+				minetest.get_node(pos).param2 = 0
+				updateConduitMain(pos)
+			end,
+			after_destruct = updateSurroundingConduits
+		}
+	)
+end
+
+registerConduit("kawerin:conduit", "コンデュイット", "conduit.png", 12)
 
 minetest.register_craft({
 	output = "kawerin:conduit 48",
@@ -235,7 +235,7 @@ function updateConduit(pos, previous)
 	local e = vector.new(pos.x + 1, pos.y, pos.z)
 	local u = vector.new(pos.x, pos.y + 1, pos.z)
 	local d = vector.new(pos.x, pos.y - 1, pos.z)
-	local pr = power_reduction[node.name]
+	local pr = minetest.get_item_group(node.name, "conduit")
 	if not pr then pr = 8 end
 	if isConduit(node) then
 		local oldPower = node.param2
