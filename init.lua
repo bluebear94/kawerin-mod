@@ -186,3 +186,12 @@ minetest.register_node(
 		light_source = 7
 	}
 )
+
+minetest.register_craft({
+	output = "kawerin:power_block",
+	recipe = {
+		{"group:conduit", "group:conduit", "group:conduit"},
+		{"group:conduit", "default:copper_ingot", "group:conduit"},
+		{"group:conduit", "group:conduit", "group:conduit"}
+	}
+})
