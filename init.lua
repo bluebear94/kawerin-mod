@@ -30,8 +30,8 @@ minetest.register_node(
 
 minetest.register_abm({
 	nodenames = {"kawerin:master_spark"},
-	interval = 1.0,
-	chance = 100,
+	interval = 0.5,
+	chance = 15,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		minetest.add_node(pos, {name = "air"})
 	end
