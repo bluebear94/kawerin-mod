@@ -1,4 +1,7 @@
-﻿minetest.register_node(
+﻿default = {}
+dofile(minetest.get_modpath("default") .. "/functions.lua") -- Import default sounds
+
+minetest.register_node(
 	"kawerin:doujin_block",
 	{
 		description = "同人ブロック",
@@ -46,7 +49,8 @@ minetest.register_node(
 			"mini_hakkero_side.png", "mini_hakkero_side.png", 
 			"mini_hakkero_side.png", "mini_hakkero_side.png", 
 		},
-		groups = {snappy = 1, choppy = 2, oddly_breakable_by_hand = 2}
+		groups = {snappy = 1, choppy = 2, oddly_breakable_by_hand = 2},
+		sounds = default.node_sound_wood_defaults()
 	}
 )
 
@@ -152,12 +156,16 @@ function registerConduit(name, description, tile, pr)
 				minetest.get_node(pos).param2 = 0
 				updateConduitMain(pos)
 			end,
-			after_destruct = updateSurroundingConduits
+			after_destruct = updateSurroundingConduits,
+			sounds = default.node_sound_stone_defaults()
 		}
 	)
 end
 
-registerConduit("kawerin:conduit", "コンデュイット", "conduit.png", 12)
+registerConduit("kawerin:conduit", "コンデュイット", "default_copper_block.png", 12)
+registerConduit("kawerin:silver_conduit", "銀のコンデュイット", "silver_block.png", 6)
+registerConduit("kawerin:gold_conduit", "金のコンデュイット", "default_gold_block.png", 4)
+registerConduit("kawerin:nyan_conduit", "にゃんにゃんコンデュイット", "default_nc_rb.png", 2)
 
 minetest.register_craft({
 	output = "kawerin:conduit 48",
@@ -165,6 +173,33 @@ minetest.register_craft({
 		{"", "default:copper_ingot", ""},
 		{"default:copper_ingot", "default:copper_ingot", "default:copper_ingot"},
 		{"", "default:copper_ingot", ""}
+	}
+})
+
+minetest.register_craft({
+	output = "kawerin:silver_conduit 8",
+	recipe = {
+		{"group:conduit", "group:conduit", "group:conduit"},
+		{"group:conduit", "kawerin:silver_ingot", "group:conduit"},
+		{"group:conduit", "group:conduit", "group:conduit"}
+	}
+})
+
+minetest.register_craft({
+	output = "kawerin:gold_conduit 8",
+	recipe = {
+		{"group:conduit", "group:conduit", "group:conduit"},
+		{"group:conduit", "default:gold_ingot", "group:conduit"},
+		{"group:conduit", "group:conduit", "group:conduit"}
+	}
+})
+
+minetest.register_craft({
+	output = "kawerin:nyan_conduit 4",
+	recipe = {
+		{"default:nyancat_rainbow", "group:conduit", "default:nyancat_rainbow"},
+		{"group:conduit", "default:nyancat", "group:conduit"},
+		{"default:nyancat_rainbow", "group:conduit", "default:nyancat_rainbow"}
 	}
 })
 
@@ -255,3 +290,102 @@ function updateConduit(pos, previous)
 		end
 	else return end
 end
+
+function createOreSet(properties)
+	minetest.register_node(
+		properties.oreName,
+		{
+			description = properties.oreDescription,
+			tiles = {"default_stone.png^" .. properties.oreTexture},
+			is_ground_content = true,
+			groups = {cracky = properties.crackyLevel},
+			drop = properties.lumpName,
+			sounds = default.node_sound_stone_defaults()
+		}
+	)
+	minetest.register_node(
+		properties.blockName,
+		{
+			description = properties.blockDescription,
+			tiles = {properties.blockTexture},
+			is_ground_content = true,
+			groups = {cracky = properties.crackyLevel, level = properties.mineLevel},
+			sounds = default.node_sound_stone_defaults()
+		}
+	)
+	minetest.register_craftitem(
+		properties.lumpName,
+		{
+			description = properties.lumpDescription,
+			inventory_image = properties.lumpTexture
+		}
+	)
+	minetest.register_craftitem(
+		properties.ingotName,
+		{
+			description = properties.ingotDescription,
+			inventory_image = properties.ingotTexture
+		}
+	)
+	minetest.register_craft({
+		type = "cooking",
+		output = properties.ingotName,
+		recipe = properties.lumpName
+	})
+	local row = {properties.ingotName, properties.ingotName, properties.ingotName}
+	minetest.register_craft({
+		output = properties.blockName,
+		recipe = {row, row, row}
+	})
+	minetest.register_craft({
+		type = "shapeless",
+		output = properties.ingotName .. " 9",
+		recipe = {properties.blockName}
+	})
+	local oreDist = properties.oreDist
+	for _, o in ipairs(oreDist) do
+		minetest.register_ore({
+			ore_type = "scatter",
+			ore = properties.oreName,
+			wherein = "default:stone",
+			clust_scarcity = o.s,
+			clust_num_ores = o.n,
+			clust_size = o.z,
+			height_min = o.hl,
+			height_max = o.hh
+		})
+	end
+end
+
+createOreSet({
+	oreName = "kawerin:stone_with_silver",
+	lumpName = "kawerin:silver_lump",
+	ingotName = "kawerin:silver_ingot",
+	blockName = "kawerin:silver_block",
+	oreDescription = "銀の鉱石",
+	lumpDescription = "銀の塊",
+	ingotDescription = "銀のインゴット",
+	blockDescription = "銀のブロック",
+	oreTexture = "silver_ore.png",
+	lumpTexture = "silver_lump.png",
+	ingotTexture = "silver_ingot.png",
+	blockTexture = "silver_block.png",
+	crackyLevel = 2,
+	mineLevel = 2,
+	oreDist = {
+		{
+			s = 12*12*12,
+			n = 4,
+			z = 3,
+			hl = -256,
+			hh = -64
+		},
+		{
+			s = 10*10*10,
+			n = 6,
+			z = 4,
+			hl = -31000,
+			hh = -256
+		}
+	}
+})
