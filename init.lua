@@ -130,6 +130,18 @@ function getPowerLevel(pos, pr)
 	return 0
 end
 
+function getPowerLevelG(pos) -- used for gates
+	local node = minetest.get_node_or_nil(pos)
+	if not node then return 0 end
+	if node.name == "kawerin:power_block" then
+		return 255
+	end
+	if isConduit(node) then
+		return node.param2
+	end
+	return 0
+end
+
 CONDUIT_MODEL = {
 	{-0.5, -0.125, -0.125, 0.5, 0.125, 0.125},
 	{-0.125, -0.125, -0.5, 0.125, 0.125, 0.5},
