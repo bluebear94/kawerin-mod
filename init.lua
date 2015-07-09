@@ -45,9 +45,9 @@ minetest.register_node(
 	{
 		description = "ミニ八卦炉",
 		tiles = {
-			"kawerin_mini_hakkero_top.png", "mini_hakkero_bottom.png", 
-			"kawerin_mini_hakkero_side.png", "mini_hakkero_side.png", 
-			"kawerin_mini_hakkero_side.png", "mini_hakkero_side.png", 
+			"kawerin_mini_hakkero_top.png", "kawerin_mini_hakkero_bottom.png", 
+			"kawerin_mini_hakkero_side.png", "kawerin_mini_hakkero_side.png", 
+			"kawerin_mini_hakkero_side.png", "kawerin_mini_hakkero_side.png", 
 		},
 		groups = {snappy = 1, choppy = 2, oddly_breakable_by_hand = 2},
 		sounds = default.node_sound_wood_defaults()
