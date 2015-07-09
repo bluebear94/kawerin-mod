@@ -5,7 +5,7 @@ minetest.register_node(
 	"kawerin:doujin_block",
 	{
 		description = "同人ブロック",
-		tiles = {"dame.png"},
+		tiles = {"kawerin_dame.png"},
 		groups = {cracky = 3, stone = 1}
 	}
 )
@@ -14,7 +14,7 @@ minetest.register_node(
 	"kawerin:master_spark",
 	{
 		description = "マスタースパーク",
-		tiles = {"masterspark.png"},
+		tiles = {"kawerin_masterspark.png"},
 		groups = {},
 		post_effect_color = {
 			r = 255, g = 255, b = 255, a = 96
@@ -45,9 +45,9 @@ minetest.register_node(
 	{
 		description = "ミニ八卦炉",
 		tiles = {
-			"mini_hakkero_top.png", "mini_hakkero_bottom.png", 
-			"mini_hakkero_side.png", "mini_hakkero_side.png", 
-			"mini_hakkero_side.png", "mini_hakkero_side.png", 
+			"kawerin_mini_hakkero_top.png", "mini_hakkero_bottom.png", 
+			"kawerin_mini_hakkero_side.png", "mini_hakkero_side.png", 
+			"kawerin_mini_hakkero_side.png", "mini_hakkero_side.png", 
 		},
 		groups = {snappy = 1, choppy = 2, oddly_breakable_by_hand = 2},
 		sounds = default.node_sound_wood_defaults()
@@ -174,10 +174,10 @@ function registerConduit(name, description, tile, pr)
 	)
 end
 
-registerConduit("kawerin:conduit", "コンデュイット", "default_copper_block.png", 12)
-registerConduit("kawerin:silver_conduit", "銀のコンデュイット", "silver_block.png", 6)
-registerConduit("kawerin:gold_conduit", "金のコンデュイット", "default_gold_block.png", 4)
-registerConduit("kawerin:nyan_conduit", "にゃんにゃんコンデュイット", "default_nc_rb.png", 2)
+registerConduit("kawerin_kawerin:conduit", "コンデュイット", "default_copper_block.png", 12)
+registerConduit("kawerin_kawerin:silver_conduit", "銀のコンデュイット", "silver_block.png", 6)
+registerConduit("kawerin_kawerin:gold_conduit", "金のコンデュイット", "default_gold_block.png", 4)
+registerConduit("kawerin_kawerin:nyan_conduit", "にゃんにゃんコンデュイット", "default_nc_rb.png", 2)
 
 minetest.register_craft({
 	output = "kawerin:conduit 48",
@@ -219,7 +219,7 @@ minetest.register_node(
 	"kawerin:power_block",
 	{
 		description = "パワーブロック",
-		tiles = {"power_block.png"},
+		tiles = {"kawerin_power_block.png"},
 		groups = {cracky = 3},
 		light_source = 7,
 		after_destruct = updateSurroundingConduits
@@ -378,10 +378,10 @@ createOreSet({
 	lumpDescription = "銀の塊",
 	ingotDescription = "銀のインゴット",
 	blockDescription = "銀のブロック",
-	oreTexture = "silver_ore.png",
-	lumpTexture = "silver_lump.png",
-	ingotTexture = "silver_ingot.png",
-	blockTexture = "silver_block.png",
+	oreTexture = "kawerin_silver_ore.png",
+	lumpTexture = "kawerin_silver_lump.png",
+	ingotTexture = "kawerin_silver_ingot.png",
+	blockTexture = "kawerin_silver_block.png",
 	crackyLevel = 2,
 	mineLevel = 2,
 	oreDist = {
